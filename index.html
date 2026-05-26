@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Let it Cast — Investor demo mockup</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; font-family: var(--font-ui); }
+  body { min-height: 100vh; }
+  /* Mobile bezel */
+  .lic-phone {
+    width: 402px; height: 870px;
+    border-radius: 56px; overflow: hidden; position: relative;
+    background: #000; padding: 10px;
+    box-shadow: 0 40px 80px rgba(10,10,11,0.18), 0 0 0 1px rgba(10,10,11,0.18);
+  }
+  .lic-phone-inner {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 46px; overflow: hidden; background: #FAFAFB;
+  }
+  /* Dynamic island */
+  .lic-island {
+    position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 32px; border-radius: 999px; background: #000;
+    z-index: 40; pointer-events: none;
+  }
+  /* Home indicator */
+  .lic-home {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 132px; height: 4px; border-radius: 999px;
+    background: rgba(0,0,0,0.18); z-index: 50; pointer-events: none;
+  }
+  .lic-phone-dark .lic-home { background: rgba(255,255,255,0.6); }
+
+  /* Mac window-ish */
+  .lic-mac {
+    width: 1440px; height: 900px; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 30px 90px rgba(10,10,11,0.18), 0 0 0 1px rgba(10,10,11,0.1);
+    background: #fff; position: relative;
+    display: flex; flex-direction: column;
+  }
+  .lic-mac-bar {
+    height: 32px; background: linear-gradient(180deg, #fbfbfc 0%, #eef0f4 100%);
+    border-bottom: 1px solid #d4d6db;
+    display: flex; align-items: center; padding: 0 14px; gap: 8px; flex-shrink: 0;
+  }
+  .lic-mac-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .lic-mac-bar .url {
+    margin: 0 auto; padding: 4px 14px; border-radius: 6px;
+    font-family: var(--font-mono); font-size: 11px; color: #6b6b73;
+    background: #fff; border: 1px solid #e2e4ea; display: flex; align-items: center; gap: 6px;
+  }
+  .lic-mac-body { flex: 1; overflow: hidden; }
+
+  /* Section caption helper */
+  .dc-section-note {
+    font-family: var(--font-mono);
+    font-size: 10px; color: rgba(60,50,40,0.6);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="lib.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="screens-mobile.jsx"></script>
+<script type="text/babel" src="screens-desktop.jsx"></script>
+<script type="text/babel" src="screens-social.jsx"></script>
+<script type="text/babel" src="selftape.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

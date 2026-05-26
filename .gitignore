@@ -1,0 +1,16 @@
+# Local design tool state
+.claude/
+.design-canvas.state.json
+.thumbnail
+
+# Design source assets (confidential brand PDFs + reference images)
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

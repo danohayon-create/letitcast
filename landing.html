@@ -1,0 +1,1039 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Let it Cast — The performance layer of global casting</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Let it Cast turns auditions into a continuous performance signal — not a one-off decision. The first performance-native infrastructure for global casting.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #FAFAFB; }
+  body {
+    font-family: var(--font-ui); color: var(--lic-ink);
+    -webkit-font-smoothing: antialiased; font-feature-settings: "ss01";
+  }
+  .container { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+  .disp { font-family: var(--font-display); letter-spacing: -0.025em; }
+  .mono { font-family: var(--font-mono); }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    color: var(--lic-muted); letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border-radius: 10px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent;
+    text-decoration: none; transition: filter .15s, transform .1s;
+  }
+  .btn:hover { filter: brightness(0.95); }
+  .btn-primary { background: var(--lic-ink); color: #fff; border-color: var(--lic-ink); }
+  .btn-secondary { background: #fff; color: var(--lic-ink); border-color: var(--lic-line-strong); }
+  .btn-ghost { background: transparent; color: var(--lic-ink); }
+  .btn-yellow { background: var(--lic-yellow); color: #0A0A0B; border-color: var(--lic-yellow); }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid var(--lic-line); border-radius: 14px; overflow: hidden;
+    background: #fff;
+  }
+  .stat {
+    padding: 28px 24px; border-right: 1px solid var(--lic-line);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-v { font-family: var(--font-display); font-size: 44px; font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+  .stat-l { font-size: 12px; color: var(--lic-muted); margin-top: 8px; line-height: 1.4; }
+  /* Logo bars accent */
+  .logo-bars { display: inline-flex; gap: 3px; align-items: center; }
+  .logo-bars span { width: 6px; height: 14px; border-radius: 1px; }
+  /* Section padding */
+  section { padding: 100px 0; position: relative; }
+  section.tight { padding: 64px 0; }
+  h1, h2, h3 { margin: 0; }
+  /* Marquee */
+  .marquee { overflow: hidden; padding: 24px 0; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .marquee-track { display: flex; gap: 56px; animation: marq 40s linear infinite; }
+  @keyframes marq { to { transform: translateX(-50%); } }
+  .marquee-item { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: rgba(10,10,11,0.5); white-space: nowrap; letter-spacing: -0.01em; }
+  .marquee-item.dim { color: rgba(10,10,11,0.25); }
+
+  /* Cards */
+  .card {
+    background: #fff; border-radius: 18px;
+    border: 1px solid var(--lic-line); padding: 28px;
+  }
+  .card-dark {
+    background: var(--lic-ink); color: #fff; border-radius: 18px; padding: 28px;
+  }
+
+  /* Header */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250,250,251,0.85); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--lic-line);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-links {
+    display: flex; gap: 28px; font-size: 13px; font-weight: 500; color: var(--lic-muted);
+  }
+  .nav-links a { color: inherit; text-decoration: none; }
+  .nav-links a:hover { color: var(--lic-ink); }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 100px;
+    position: relative; overflow: hidden;
+  }
+  .hero-grid {
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: 92px; font-weight: 700;
+    letter-spacing: -0.035em; line-height: 0.95;
+  }
+  .hero-sub {
+    font-size: 19px; color: #3A3A40; line-height: 1.5; max-width: 540px; margin-top: 28px;
+  }
+  .hero-ctas { display: flex; gap: 10px; margin-top: 32px; }
+  .hero-meta {
+    display: flex; gap: 24px; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--lic-line);
+    font-size: 12px; color: var(--lic-muted);
+  }
+  .hero-meta strong { color: var(--lic-ink); }
+
+  /* Hero visual */
+  .hero-visual {
+    position: relative; height: 520px;
+  }
+  .hv-card {
+    position: absolute; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(10,10,11,0.18), 0 0 0 1px rgba(10,10,11,0.05);
+    background: #fff;
+  }
+  .hv-phone {
+    width: 240px; height: 480px;
+    bottom: 0; right: 80px; border-radius: 36px;
+    background: #0A0A0B; padding: 8px;
+    transform: rotate(2deg);
+  }
+  .hv-phone-inner {
+    width: 100%; height: 100%; border-radius: 28px; overflow: hidden;
+    background: linear-gradient(180deg, #2A1F1F 0%, #0F0F12 100%);
+    position: relative;
+  }
+  .hv-phone-inner img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 25%;
+    filter: contrast(1.05) saturate(0.85);
+  }
+  .hv-phone-inner::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.65) 100%);
+  }
+  .hv-rec-badge {
+    position: absolute; top: 16px; left: 12px;
+    background: rgba(229,40,58,0.95); color: #fff; padding: 4px 8px;
+    border-radius: 999px; font-size: 9px; font-weight: 700; display: flex; gap: 5px; align-items: center;
+    z-index: 5;
+  }
+  .hv-rec-badge::before {
+    content: ''; width: 5px; height: 5px; border-radius: 999px; background: #fff;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+  .hv-script {
+    position: absolute; left: 12px; right: 12px; bottom: 16px; z-index: 5;
+    color: #fff; text-align: center; font-family: var(--font-display); font-size: 14px; font-weight: 600;
+  }
+  .hv-script-tag {
+    font-family: var(--font-mono); font-size: 9px; color: #FFC400; letter-spacing: 0.1em; margin-bottom: 4px;
+  }
+
+  .hv-review {
+    width: 380px; top: 12px; left: 0; padding: 18px;
+    transform: rotate(-3deg);
+  }
+  .hv-rating-btns {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 14px;
+  }
+  .hv-rating-btns div {
+    padding: 9px 0; border-radius: 8px; text-align: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+  }
+
+  .hv-profile {
+    width: 280px; bottom: 40px; right: -10px; padding: 18px;
+    transform: rotate(2deg);
+  }
+  .perf-bar { height: 4px; border-radius: 999px; background: var(--lic-paper-3); margin-bottom: 8px; }
+  .perf-bar > div { height: 100%; border-radius: 999px; }
+
+  /* Problem */
+  .problem-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 36px; }
+  .ps-card {
+    padding: 28px; border-radius: 14px; background: #fff;
+    border: 1px solid var(--lic-line);
+    position: relative; overflow: hidden;
+  }
+  .ps-card-v { font-family: var(--font-display); font-size: 64px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+  .ps-card.red .ps-card-v { color: var(--lic-red); }
+  .ps-card.blue .ps-card-v { color: var(--lic-blue); }
+  .ps-card.dark { background: var(--lic-ink); color: #fff; border-color: var(--lic-ink); }
+
+  /* Product 3 columns */
+  .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+  .pg-card {
+    padding: 0; border-radius: 18px; background: #fff;
+    border: 1px solid var(--lic-line); overflow: hidden;
+  }
+  .pg-card-media {
+    height: 220px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #E2E6F3 0%, #ECEFF8 100%);
+  }
+  .pg-card-body { padding: 24px; }
+
+  /* Dual mode */
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+  .dual-card { padding: 32px; border-radius: 18px; min-height: 380px; display: flex; flex-direction: column; }
+  .dual-card.light { background: #fff; border: 1px solid var(--lic-line); color: var(--lic-ink); }
+  .dual-card.dark { background: var(--lic-ink); color: #fff; }
+  .dual-list { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 24px; }
+  .dual-list li { list-style: none; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; }
+  .dual-list li::before { content: '→'; flex-shrink: 0; font-weight: 700; }
+
+  /* Moat */
+  .moat { background: var(--lic-ink); color: #fff; padding: 100px 0; position: relative; overflow: hidden; }
+  .moat::before {
+    content: ''; position: absolute; top: -150px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,196,0,0.18) 0%, transparent 70%);
+  }
+  .moat::after {
+    content: ''; position: absolute; bottom: -150px; left: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(30,90,245,0.15) 0%, transparent 70%);
+  }
+  .moat .container { position: relative; z-index: 2; }
+
+  /* Pricing */
+  .price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 40px; }
+  .price-card {
+    background: #fff; border: 1px solid var(--lic-line); border-radius: 18px;
+    padding: 28px 24px; display: flex; flex-direction: column;
+  }
+  .price-card.featured { background: var(--lic-ink); color: #fff; border-color: var(--lic-ink); position: relative; }
+  .price-card.featured::before {
+    content: 'Most popular'; position: absolute; top: -10px; left: 24px;
+    background: var(--lic-yellow); color: #0A0A0B; padding: 3px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .price-v { font-family: var(--font-display); font-size: 44px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; margin: 14px 0; }
+  .price-feats { list-style: none; padding: 0; margin: 16px 0 0; font-size: 13px; line-height: 1.7; }
+  .price-feats li::before { content: '✓ '; opacity: 0.5; }
+
+  /* Team */
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .team-card {
+    background: #fff; border: 1px solid var(--lic-line);
+    border-radius: 18px; padding: 24px; display: flex; gap: 16px; align-items: center;
+  }
+  .team-card img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; }
+  .team-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+  .team-role { font-size: 12px; color: var(--lic-muted); font-family: var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+  .team-bio { font-size: 12px; color: #3A3A40; margin-top: 8px; line-height: 1.5; }
+  .advisors-row { margin-top: 24px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; padding: 24px; border: 1px dashed var(--lic-line-strong); border-radius: 14px; }
+  .advisor-chip { display: flex; gap: 10px; align-items: center; }
+  .advisor-chip img { width: 36px; height: 36px; border-radius: 50%; }
+  .advisor-chip .n { font-size: 13px; font-weight: 700; }
+  .advisor-chip .r { font-size: 10px; color: var(--lic-muted); font-family: var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Quote */
+  .quote-section { background: linear-gradient(180deg, #0A0A0B 0%, #1B1B1B 100%); color: #fff; padding: 120px 0; position: relative; overflow: hidden; }
+  .quote-section::before {
+    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(255,196,0,0.08) 0%, transparent 60%);
+  }
+  .quote-section .container { position: relative; z-index: 2; }
+  .quote-text {
+    font-family: var(--font-display); font-size: 44px; font-weight: 600;
+    line-height: 1.15; letter-spacing: -0.02em; max-width: 1000px; margin: 0 auto;
+    text-align: center; text-wrap: balance;
+  }
+  .quote-author {
+    margin-top: 32px; display: flex; gap: 14px; align-items: center; justify-content: center;
+  }
+  .quote-author img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+
+  /* Final */
+  .final {
+    background: var(--lic-ink); color: #fff; padding: 100px 0; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .final::before {
+    content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(255,196,0,0.15) 0%, transparent 60%);
+  }
+  .final h2 {
+    font-family: var(--font-display); font-size: 88px; font-weight: 700;
+    letter-spacing: -0.035em; line-height: 0.95;
+    position: relative; z-index: 2;
+  }
+  .final .ctas { display: flex; gap: 10px; justify-content: center; margin-top: 32px; position: relative; z-index: 2; }
+
+  /* Footer */
+  footer { padding: 56px 0 40px; color: var(--lic-muted); font-size: 12px; }
+  footer .cols { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
+  footer h4 { font-size: 11px; color: var(--lic-ink); font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 12px; }
+  footer a { display: block; color: var(--lic-muted); text-decoration: none; padding: 4px 0; }
+  footer a:hover { color: var(--lic-ink); }
+
+  /* Tag chip */
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    background: #ECEFF8; color: var(--lic-ink);
+    border: 1px solid var(--lic-mist);
+  }
+
+  /* Mark */
+  ::selection { background: var(--lic-yellow); color: #0A0A0B; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
+      <svg width="14" height="22" viewBox="0 0 22 36">
+        <rect x="0" y="0" width="9" height="11" rx="1.5" fill="#FFC400"/>
+        <rect x="11" y="6" width="9" height="11" rx="1.5" fill="#E5283A"/>
+        <rect x="3" y="22" width="9" height="13" rx="1.5" fill="#1E5AF5"/>
+      </svg>
+      <span class="disp" style="font-weight:700;font-size:18px;letter-spacing:-0.025em;">let it cast</span>
+    </a>
+    <div class="nav-links">
+      <a href="#product">Product</a>
+      <a href="#talent">For talent</a>
+      <a href="#productions">For productions</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#team">Team</a>
+      <a href="index.html">Investor demo →</a>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a class="btn btn-ghost" href="#login">Sign in</a>
+      <a class="btn btn-primary" href="#start">Start casting</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="chip" style="margin-bottom:24px;">
+          <span class="logo-bars">
+            <span style="background:#FFC400"></span><span style="background:#E5283A"></span><span style="background:#1E5AF5"></span>
+          </span>
+          Raising pre-seed · U.S. launch 2026
+        </span>
+        <h1>
+          The performance layer<br>
+          of global <span style="color:#1E5AF5;font-style:italic;font-family:var(--font-display);">casting.</span>
+        </h1>
+        <p class="hero-sub">
+          Let it Cast turns auditions into a continuous performance signal — not a one-off decision.
+          The first video-native, AI-matching infrastructure for the $20B global casting market.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="index.html">See the product demo
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-secondary" href="#deck">Read investor deck</a>
+        </div>
+        <div class="hero-meta">
+          <span><strong>$20B</strong> global TAM</span>
+          <span><strong>64K+</strong> talents on POC</span>
+          <span><strong>28K</strong> auditions ran</span>
+          <span><strong>680</strong> actors hired</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <!-- Phone with self-tape -->
+        <div class="hv-card hv-phone">
+          <div class="hv-phone-inner">
+            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="">
+            <div class="hv-rec-badge">REC 00:47</div>
+            <div class="hv-script">
+              <div class="hv-script-tag">FANNY · SCENE 14</div>
+              I packed a bag every Sunday for two years.
+            </div>
+          </div>
+        </div>
+        <!-- Review card -->
+        <div class="hv-card hv-review">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="" style="width:38px;height:38px;border-radius:8px;object-fit:cover;">
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:13px;">Maya Reyes <span class="chip" style="font-size:9px;padding:2px 6px;background:#FFF6D6;border-color:#F5D77A;color:#7A5A00;margin-left:4px;">92 match</span></div>
+              <div style="font-size:11px;color:var(--lic-muted);">as Fanny Brice · Evermore</div>
+            </div>
+            <span class="mono" style="font-size:10px;color:var(--lic-muted);">1:14</span>
+          </div>
+          <div class="hv-rating-btns">
+            <div style="background:#E5283A;">No go</div>
+            <div style="background:#F5B400;color:#0A0A0B;">Maybe</div>
+            <div style="background:#16A34A;">Good match</div>
+          </div>
+        </div>
+        <!-- Profile -->
+        <div class="hv-card hv-profile" style="background:#0A0A0B;color:#fff;border:none;">
+          <div class="mono" style="font-size:9px;opacity:0.7;letter-spacing:0.1em;text-transform:uppercase;">Performance profile</div>
+          <div class="disp" style="font-size:18px;font-weight:700;margin-top:6px;">28 auditions in.</div>
+          <div style="margin-top:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Vulnerability</span><span style="opacity:0.7;">92</span></div>
+            <div class="perf-bar" style="background:rgba(255,255,255,0.12);"><div style="width:92%;background:#FFC400;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Comedic timing</span><span style="opacity:0.7;">74</span></div>
+            <div class="perf-bar" style="background:rgba(255,255,255,0.12);"><div style="width:74%;background:#1E5AF5;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Vocal command</span><span style="opacity:0.7;">83</span></div>
+            <div class="perf-bar" style="background:rgba(255,255,255,0.12);"><div style="width:83%;background:#E5283A;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST MARQUEE -->
+<section class="tight" style="padding:32px 0 24px;background:#fff;border-top:1px solid var(--lic-line);border-bottom:1px solid var(--lic-line);">
+  <div class="container">
+    <div class="eyebrow" style="text-align:center;margin-bottom:16px;">Acclaimed by world-class directors & studios</div>
+    <div class="marquee">
+      <div class="marquee-track">
+        <span class="marquee-item">Paul Schrader</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Darren Aronofsky</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Roman Polanski</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Jacques Audiard</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Costa-Gavras</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Werner Herzog</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">A24</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Pathé</span>
+        <span class="marquee-item dim">·</span>
+        <!-- duplicate for loop -->
+        <span class="marquee-item">Paul Schrader</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Darren Aronofsky</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Roman Polanski</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Jacques Audiard</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Costa-Gavras</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Werner Herzog</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">A24</span>
+        <span class="marquee-item dim">·</span>
+        <span class="marquee-item">Pathé</span>
+        <span class="marquee-item dim">·</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <span class="eyebrow">The problem</span>
+    <h2 class="disp" style="font-size:64px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      Casting is stuck in the 1990s — and it's costing billions.
+    </h2>
+    <p style="font-size:18px;color:#3A3A40;max-width:780px;margin-top:18px;line-height:1.55;">
+      The casting workflow is pre-digital in a digital-first content world.
+      Every audition is reviewed once, then disappears. No memory. No learning. No compounding.
+    </p>
+    <div class="problem-stats">
+      <div class="ps-card red">
+        <span class="eyebrow">Lost in the pile</span>
+        <div class="ps-card-v">70%+</div>
+        <p style="font-size:13px;color:#3A3A40;margin:12px 0 0;line-height:1.55;">
+          of submissions <strong>never get reviewed</strong>. Talents waste hours; productions miss great fits.
+        </p>
+        <p class="mono" style="font-size:9px;color:var(--lic-muted);margin-top:14px;letter-spacing:0.04em;">Backstage 2023 · Casting Networks 2022</p>
+      </div>
+      <div class="ps-card blue">
+        <span class="eyebrow">Manual everything</span>
+        <div class="ps-card-v">80%+</div>
+        <p style="font-size:13px;color:#3A3A40;margin:12px 0 0;line-height:1.55;">
+          of casting decisions are made <strong>manually</strong>. Filtering thousands of profiles by hand → bias + human error.
+        </p>
+        <p class="mono" style="font-size:9px;color:var(--lic-muted);margin-top:14px;letter-spacing:0.04em;">CSA Insights 2023</p>
+      </div>
+      <div class="ps-card dark">
+        <span class="eyebrow" style="color:rgba(255,255,255,0.7);">Time bleed</span>
+        <div class="ps-card-v" style="color:#FFC400;">2–6 wks</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.85);margin:12px 0 0;line-height:1.55;">
+          per casting project, mostly in admin time. Producers and casting directors lose <strong>50–70%</strong> of that to digital workflows.
+        </p>
+        <p class="mono" style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:14px;letter-spacing:0.04em;">PGA Workflow Report · Deloitte 2023</p>
+      </div>
+    </div>
+    <div style="margin-top:24px;padding:28px;border-radius:14px;background:linear-gradient(120deg,#FFF6D6 0%, #FFE7CC 100%);border:1px solid #F5D77A;">
+      <p style="margin:0;font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-0.01em;line-height:1.3;">
+        Casting is not just inefficient — <span style="text-decoration:underline;text-decoration-color:#E5283A;text-decoration-thickness:2px;">it is non-cumulative</span>.
+        Every audition disappears after a single decision.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION / PRODUCT -->
+<section id="product" style="background:#fff;border-top:1px solid var(--lic-line);">
+  <div class="container">
+    <span class="eyebrow">The solution</span>
+    <h2 class="disp" style="font-size:64px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      Online video auditioning, made <span style="font-style:italic;color:#1E5AF5;">cumulative</span>.
+    </h2>
+    <p style="font-size:18px;color:#3A3A40;max-width:780px;margin-top:18px;line-height:1.55;">
+      Every actor self-tapes from their phone. Productions review and rate together, instantly.
+      A persistent performance profile updates with every audition — for every talent on the platform.
+    </p>
+
+    <div class="product-grid">
+      <div class="pg-card">
+        <div class="pg-card-media" style="background:linear-gradient(135deg, #0A0A0B 0%, #2A1F1F 100%);">
+          <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;filter:contrast(1.1) saturate(0.85);opacity:0.85;">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%);"></div>
+          <div style="position:absolute;top:14px;left:14px;background:rgba(229,40,58,0.95);color:#fff;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;display:flex;gap:5px;align-items:center;">
+            <span style="width:5px;height:5px;border-radius:999px;background:#fff;"></span> REC 00:47
+          </div>
+          <div style="position:absolute;left:14px;right:14px;bottom:14px;color:#fff;font-family:var(--font-display);font-size:15px;font-weight:600;text-align:center;line-height:1.3;">
+            "I packed a bag every Sunday for two years."
+          </div>
+        </div>
+        <div class="pg-card-body">
+          <span class="eyebrow" style="color:#E5283A;">01 · Self-tape</span>
+          <h3 class="disp" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-0.015em;">Phone-first audition system</h3>
+          <p style="font-size:14px;color:#3A3A40;line-height:1.55;margin:8px 0 0;">
+            Built-in teleprompter, framing guides, take selection, AI quality check.
+            One-tap to apply for casting calls. From script to submission in under 10 minutes.
+          </p>
+        </div>
+      </div>
+
+      <div class="pg-card">
+        <div class="pg-card-media" style="background:linear-gradient(135deg, #ECEFF8 0%, #E2E6F3 100%);">
+          <div style="position:absolute;top:24px;left:24px;right:24px;padding:14px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(10,10,11,0.08);">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+              <div style="flex:1;">
+                <strong style="font-size:13px;">Maya Reyes <span class="chip" style="font-size:9px;padding:2px 6px;background:#FFF6D6;border-color:#F5D77A;color:#7A5A00;margin-left:4px;">92</span></strong>
+                <div style="font-size:11px;color:var(--lic-muted);">as Fanny Brice</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px;">
+              <div style="padding:7px 0;border-radius:6px;background:#E5283A;color:#fff;text-align:center;font-size:10px;font-weight:700;">No go</div>
+              <div style="padding:7px 0;border-radius:6px;background:#F5B400;color:#0A0A0B;text-align:center;font-size:10px;font-weight:700;">Maybe</div>
+              <div style="padding:7px 0;border-radius:6px;background:#16A34A;color:#fff;text-align:center;font-size:10px;font-weight:700;">Good</div>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:24px;left:24px;right:24px;padding:12px;background:rgba(10,10,11,0.92);color:#fff;border-radius:10px;font-size:11px;display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>3 of 5</strong> teammates rated</div>
+            <div style="display:flex;gap:3px;">
+              <span style="width:18px;height:18px;border-radius:4px;background:#16A34A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">ET</span>
+              <span style="width:18px;height:18px;border-radius:4px;background:#F5B400;color:#0A0A0B;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">JC</span>
+              <span style="width:18px;height:18px;border-radius:4px;background:#16A34A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">LK</span>
+            </div>
+          </div>
+        </div>
+        <div class="pg-card-body">
+          <span class="eyebrow" style="color:#1E5AF5;">02 · Collaborative review</span>
+          <h3 class="disp" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-0.015em;">A dashboard for the whole team</h3>
+          <p style="font-size:14px;color:#3A3A40;line-height:1.55;margin:8px 0 0;">
+            Casting directors, producers, directors — same place, real-time ratings, threaded comments,
+            shortlists, callbacks. AI scene analysis built in.
+          </p>
+        </div>
+      </div>
+
+      <div class="pg-card">
+        <div class="pg-card-media" style="background:linear-gradient(135deg, #0A0A0B 0%, #1B1B1B 100%);padding:24px;color:#fff;">
+          <div class="mono" style="font-size:10px;opacity:0.6;letter-spacing:0.1em;text-transform:uppercase;">Performance profile</div>
+          <div class="disp" style="font-size:24px;font-weight:700;margin-top:6px;line-height:1.1;">Built from 28 auditions</div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Vulnerability</span><span style="opacity:0.7;">92</span></div>
+              <div style="height:4px;background:rgba(255,255,255,0.12);border-radius:999px;"><div style="width:92%;height:100%;background:#FFC400;border-radius:999px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Comedic timing</span><span style="opacity:0.7;">74</span></div>
+              <div style="height:4px;background:rgba(255,255,255,0.12);border-radius:999px;"><div style="width:74%;height:100%;background:#1E5AF5;border-radius:999px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Physical range</span><span style="opacity:0.7;">61</span></div>
+              <div style="height:4px;background:rgba(255,255,255,0.12);border-radius:999px;"><div style="width:61%;height:100%;background:#E5283A;border-radius:999px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Vocal command</span><span style="opacity:0.7;">83</span></div>
+              <div style="height:4px;background:rgba(255,255,255,0.12);border-radius:999px;"><div style="width:83%;height:100%;background:#16A34A;border-radius:999px;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pg-card-body">
+          <span class="eyebrow" style="color:#7A5A00;">03 · Performance profile</span>
+          <h3 class="disp" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-0.015em;">A model of how a talent performs</h3>
+          <p style="font-size:14px;color:#3A3A40;line-height:1.55;margin:8px 0 0;">
+            Every audition updates a persistent performance model — not who the talent claims to be.
+            The dataset compounds and cannot be reconstructed retroactively. <strong>This is the moat.</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DUAL MODE -->
+<section id="talent" style="border-top:1px solid var(--lic-line);">
+  <div class="container">
+    <span class="eyebrow">Think in dual mode</span>
+    <h2 class="disp" style="font-size:56px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      Two complementary control panels.<br>
+      One real-time arena.
+    </h2>
+    <div class="dual">
+      <div class="dual-card dark" id="productions">
+        <span class="eyebrow" style="color:rgba(255,255,255,0.7);">For productions & casting directors</span>
+        <h3 class="disp" style="font-size:36px;font-weight:700;margin-top:10px;line-height:1.05;letter-spacing:-0.02em;">A powerful, professional casting dashboard.</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,0.75);margin-top:14px;line-height:1.55;">
+          Collaborate with every stakeholder. Discover, shortlist, rate, callback — anytime, anywhere.
+        </p>
+        <ul class="dual-list">
+          <li>10–30× more efficient — from 5 weeks to 7–20 hours</li>
+          <li>Lower costs: travel, room, casting director time</li>
+          <li>AI talent search across a global performance dataset</li>
+          <li>Free for productions — we monetize talent subscriptions</li>
+        </ul>
+      </div>
+      <div class="dual-card light">
+        <span class="eyebrow">For talent</span>
+        <h3 class="disp" style="font-size:36px;font-weight:700;margin-top:10px;line-height:1.05;letter-spacing:-0.02em;">A streamlined, inspiring talent workspace.</h3>
+        <p style="font-size:14px;color:#3A3A40;margin-top:14px;line-height:1.55;">
+          Unprecedented access to your auditions — and to roles that match the way you actually perform.
+        </p>
+        <ul class="dual-list">
+          <li>More opportunities to audition — and to get a job</li>
+          <li>Better impression, less terrifying than in-person tests</li>
+          <li>Transcend the resume — performance speaks for you</li>
+          <li>Bypass agents · talents in 6 continents</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY NOW -->
+<section style="background:#fff;border-top:1px solid var(--lic-line);">
+  <div class="container">
+    <span class="eyebrow">Why now</span>
+    <h2 class="disp" style="font-size:56px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      Content demand is exploding.<br>
+      Casting infrastructure isn't keeping up.
+    </h2>
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:48px;margin-top:48px;align-items:center;">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div style="display:flex;gap:18px;align-items:flex-start;">
+          <span class="disp" style="font-size:56px;font-weight:700;color:#1E5AF5;line-height:1;letter-spacing:-0.03em;width:160px;flex-shrink:0;">+200%</span>
+          <div>
+            <strong style="font-size:16px;">Titles produced in the last 5 years.</strong>
+            <p style="margin:4px 0 0;font-size:13px;color:#3A3A40;line-height:1.55;">
+              Streaming + global platforms created a sustained, structural demand for talent at scale.
+            </p>
+            <p class="mono" style="font-size:9px;color:var(--lic-muted);margin-top:6px;letter-spacing:0.04em;">WIPO / Omdia 2024</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:18px;align-items:flex-start;">
+          <span class="disp" style="font-size:56px;font-weight:700;color:#FFC400;line-height:1;letter-spacing:-0.03em;width:160px;flex-shrink:0;">5–10%</span>
+          <div>
+            <strong style="font-size:16px;">CAGR of audiovisual content production through 2030.</strong>
+            <p style="margin:4px 0 0;font-size:13px;color:#3A3A40;line-height:1.55;">
+              A dynamic, expanding media market continually drives demand on talent search.
+            </p>
+            <p class="mono" style="font-size:9px;color:var(--lic-muted);margin-top:6px;letter-spacing:0.04em;">Ampere Analysis 2025</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:18px;align-items:flex-start;">
+          <span class="disp" style="font-size:56px;font-weight:700;color:#E5283A;line-height:1;letter-spacing:-0.03em;width:160px;flex-shrink:0;">Gen-Z</span>
+          <div>
+            <strong style="font-size:16px;">Talent expects direct access — bypassing agents.</strong>
+            <p style="margin:4px 0 0;font-size:13px;color:#3A3A40;line-height:1.55;">
+              Remote casting + self-tapes adopted post-COVID. But the workflow is still manual.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="card-dark" style="background:linear-gradient(135deg, #0A0A0B 0%, #1B1B1B 100%);padding:36px;">
+        <div class="mono" style="font-size:10px;opacity:0.6;letter-spacing:0.1em;text-transform:uppercase;">Addressable market</div>
+        <div class="disp" style="font-size:64px;font-weight:700;line-height:1;letter-spacing:-0.04em;margin-top:10px;">$20–28B</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:6px;">Global casting industry</div>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.12);margin:20px 0;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div class="disp" style="font-size:30px;font-weight:700;letter-spacing:-0.02em;">$5.2B</div>
+            <div style="font-size:11px;opacity:0.65;margin-top:2px;">U.S. casting industry</div>
+          </div>
+          <div>
+            <div class="disp" style="font-size:30px;font-weight:700;letter-spacing:-0.02em;">20M</div>
+            <div style="font-size:11px;opacity:0.65;margin-top:2px;">Auditions / year — worldwide</div>
+          </div>
+          <div>
+            <div class="disp" style="font-size:30px;font-weight:700;letter-spacing:-0.02em;">2.4M</div>
+            <div style="font-size:11px;opacity:0.65;margin-top:2px;">Auditions / year — U.S.</div>
+          </div>
+          <div>
+            <div class="disp" style="font-size:30px;font-weight:700;letter-spacing:-0.02em;">72%</div>
+            <div style="font-size:11px;opacity:0.65;margin-top:2px;">Of auditions are in TV (2025)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOAT -->
+<section class="moat">
+  <div class="container">
+    <span class="eyebrow" style="color:rgba(255,255,255,0.7);">Our moat</span>
+    <h2 class="disp" style="font-size:64px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:1000px;">
+      We don't sell software.<br>
+      We build a <span style="color:#FFC400;">non-reproducible dataset</span> of human performance.
+    </h2>
+    <p style="font-size:18px;color:rgba(255,255,255,0.75);max-width:780px;margin-top:18px;line-height:1.55;">
+      Every audition on Let it Cast is structured the same way: same scenes, same prompts, same comparable
+      conditions. Casting decisions — feedback, shortlists, outcomes — become labels. Over time the dataset
+      compounds. It cannot be reconstructed retroactively.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin-top:48px;">
+      <div style="padding:24px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <span class="eyebrow" style="color:rgba(255,255,255,0.6);">01</span>
+        <h4 class="disp" style="font-size:20px;font-weight:700;margin-top:8px;letter-spacing:-0.015em;">Standardized human performance</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;line-height:1.55;">Same scenes · same prompts · comparable auditions at scale.</p>
+      </div>
+      <div style="padding:24px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <span class="eyebrow" style="color:rgba(255,255,255,0.6);">02</span>
+        <h4 class="disp" style="font-size:20px;font-weight:700;margin-top:8px;letter-spacing:-0.015em;">Human decisions as labels</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;line-height:1.55;">Feedback · shortlists · casting outcomes captured natively.</p>
+      </div>
+      <div style="padding:24px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <span class="eyebrow" style="color:rgba(255,255,255,0.6);">03</span>
+        <h4 class="disp" style="font-size:20px;font-weight:700;margin-top:8px;letter-spacing:-0.015em;">Compounding over time</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;line-height:1.55;">A growing dataset that cannot be reconstructed retroactively.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRACTION -->
+<section>
+  <div class="container">
+    <span class="eyebrow">Traction · POC validated</span>
+    <h2 class="disp" style="font-size:56px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      A platform already <span style="font-style:italic;color:#16A34A;">acclaimed</span> by the industry.
+    </h2>
+    <p style="font-size:17px;color:#3A3A40;max-width:780px;margin-top:18px;line-height:1.55;">
+      After a successful proof-of-concept phase, Let it Cast is raising pre-seed to launch the MVP in the U.S.
+      and become the leader of digital casting.
+    </p>
+    <div class="stat-grid" style="margin-top:36px;">
+      <div class="stat"><div class="stat-v">28K</div><div class="stat-l">Auditions ran</div></div>
+      <div class="stat"><div class="stat-v">290</div><div class="stat-l">Castings hosted</div></div>
+      <div class="stat"><div class="stat-v">680</div><div class="stat-l">Actors hired · 6 continents</div></div>
+      <div class="stat"><div class="stat-v">800</div><div class="stat-l">Production companies</div></div>
+    </div>
+    <div class="stat-grid" style="margin-top:12px;">
+      <div class="stat"><div class="stat-v">64K</div><div class="stat-l">Free registered talents</div></div>
+      <div class="stat"><div class="stat-v">+20.5K</div><div class="stat-l">Followers</div></div>
+      <div class="stat"><div class="stat-v">740K</div><div class="stat-l">Monthly reach</div></div>
+      <div class="stat"><div class="stat-v">+86K</div><div class="stat-l">Community size · 2026 target</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <div class="container">
+    <span class="eyebrow" style="color:rgba(255,255,255,0.6);text-align:center;display:block;">Director's note</span>
+    <p class="quote-text" style="margin-top:24px;">
+      "Let It Cast has opened a new universe of casting for me.<br>
+      A new model of filmmaking is being invented, and Let It Cast is essential to that model."
+    </p>
+    <div class="quote-author">
+      <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FFC400 0%,#E5283A 100%);display:flex;align-items:center;justify-content:center;font-weight:800;color:#0A0A0B;">PS</div>
+      <div style="text-align:left;">
+        <div style="font-weight:700;font-size:15px;">Paul Schrader</div>
+        <div style="font-size:12px;opacity:0.6;font-family:var(--font-mono);letter-spacing:0.04em;text-transform:uppercase;">Director · American Gigolo · Taxi Driver · Raging Bull</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <span class="eyebrow">Business model</span>
+    <h2 class="disp" style="font-size:56px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      We monetize access to opportunity — <span style="font-style:italic;">not content</span>.
+    </h2>
+    <p style="font-size:17px;color:#3A3A40;max-width:780px;margin-top:18px;line-height:1.55;">
+      Free for productions. Attractive for talents. The more productions we get, the more talents we attract — and vice versa.
+      50% less expensive than competition on average.
+    </p>
+
+    <div class="price-grid">
+      <div class="price-card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <strong style="font-size:14px;">Freemium</strong>
+          <span class="mono" style="font-size:10px;color:var(--lic-muted);">Talent</span>
+        </div>
+        <div class="price-v">$0</div>
+        <div style="font-size:12px;color:var(--lic-muted);">Free for the first audition</div>
+        <ul class="price-feats">
+          <li>1 self-tape submission</li>
+          <li>Free profile + reel hosting</li>
+          <li>Casting feed</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <strong style="font-size:14px;">Basic</strong>
+          <span class="mono" style="font-size:10px;color:var(--lic-muted);">Talent</span>
+        </div>
+        <div class="price-v">$7.99<span style="font-size:14px;font-weight:500;color:var(--lic-muted);">/mo</span></div>
+        <div style="font-size:12px;color:var(--lic-muted);">Or $81/yr</div>
+        <ul class="price-feats">
+          <li>Unlimited self-tape submissions</li>
+          <li>Persistent performance profile</li>
+          <li>Smart notifications</li>
+          <li>Snap apply</li>
+        </ul>
+      </div>
+
+      <div class="price-card featured">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <strong style="font-size:14px;">Power Casting</strong>
+          <span class="mono" style="font-size:10px;color:rgba(255,255,255,0.6);">Talent</span>
+        </div>
+        <div class="price-v">$12.99<span style="font-size:14px;font-weight:500;opacity:0.6;">/mo</span></div>
+        <div style="font-size:12px;opacity:0.65;">Or $132/yr</div>
+        <ul class="price-feats">
+          <li>Everything in Basic</li>
+          <li>Priority listing for verified actors</li>
+          <li>Analytics + audition tracker</li>
+          <li>Custom reels + AI-curated castings</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <strong style="font-size:14px;">Enterprise</strong>
+          <span class="mono" style="font-size:10px;color:var(--lic-muted);">Production</span>
+        </div>
+        <div class="price-v">Free<span style="font-size:14px;font-weight:500;color:var(--lic-muted);"> +</span></div>
+        <div style="font-size:12px;color:var(--lic-muted);">$50/mo premium features (2027)</div>
+        <ul class="price-feats">
+          <li>Unlimited casting calls</li>
+          <li>Talent search + AI rerank</li>
+          <li>Full review dashboard</li>
+          <li>Audition management & hiring</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:var(--lic-muted);text-align:right;">
+      Competitor offer: <strong>$300/yr</strong> on average · Let it Cast: <strong>$132/yr</strong>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team" style="background:#fff;border-top:1px solid var(--lic-line);">
+  <div class="container">
+    <span class="eyebrow">Founding team</span>
+    <h2 class="disp" style="font-size:56px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      50 years in cinema, tech, and music platforms — combined.
+    </h2>
+
+    <div class="team-grid">
+      <div class="team-card">
+        <img src="https://randomuser.me/api/portraits/men/76.jpg" alt="">
+        <div>
+          <div class="team-name">Yoktan Haddad</div>
+          <div class="team-role">Founder · CTO / CPO</div>
+          <p class="team-bio">25 years of film production, directing, screenwriting, casting. Developed the first online video auditioning service in 2009. U.S. based · Los Angeles.</p>
+        </div>
+      </div>
+      <div class="team-card">
+        <img src="https://randomuser.me/api/portraits/men/64.jpg" alt="">
+        <div>
+          <div class="team-name">Laurent Touil-Tartour</div>
+          <div class="team-role">Founder · CRO</div>
+          <p class="team-bio">25 years of IT development, architecture, UX/UI design. Previously CTO of a global music rights platform. U.S. native.</p>
+        </div>
+      </div>
+      <div class="team-card">
+        <img src="https://randomuser.me/api/portraits/men/85.jpg" alt="">
+        <div>
+          <div class="team-name">Dan Ohayon</div>
+          <div class="team-role">CFO / CHR · Corporate</div>
+          <p class="team-bio">Former CFO & co-founder of Molotov.tv. Co-founder of Stance Partners (sold to Wavestone). HEC Paris + Engineering.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="advisors-row">
+      <div class="advisor-chip">
+        <img src="https://randomuser.me/api/portraits/men/72.jpg" alt="">
+        <div><div class="n">Avram Miller</div><div class="r">Investor · Board advisor</div></div>
+      </div>
+      <div class="advisor-chip">
+        <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="">
+        <div><div class="n">Mark Gill</div><div class="r">Producer · Industry advisor</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--lic-muted);align-self:center;">Supported by world-class sector advisors</div>
+    </div>
+  </div>
+</section>
+
+<!-- USE OF FUNDS -->
+<section style="border-top:1px solid var(--lic-line);">
+  <div class="container">
+    <span class="eyebrow">Funding · Pre-seed</span>
+    <h2 class="disp" style="font-size:56px;font-weight:700;line-height:1.0;letter-spacing:-0.03em;margin-top:16px;max-width:900px;">
+      Raising to industrialize the platform and launch the U.S. in 2026.
+    </h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px;">
+      <div class="card" style="padding:32px;">
+        <span class="eyebrow" style="color:#1E5AF5;">Phase 1 · $1M</span>
+        <div class="disp" style="font-size:32px;font-weight:700;margin-top:8px;letter-spacing:-0.02em;line-height:1.1;">2026 — Q1 2027</div>
+        <div style="font-size:13px;color:var(--lic-muted);margin-top:4px;">15 months runway · U.S. launch & growth</div>
+        <hr style="border:none;border-top:1px solid var(--lic-line);margin:20px 0;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div><strong style="font-size:18px;">6,700</strong><div style="font-size:11px;color:var(--lic-muted);">B2C paid subs</div></div>
+          <div><strong style="font-size:18px;">14</strong><div style="font-size:11px;color:var(--lic-muted);">B2B production accounts</div></div>
+          <div><strong style="font-size:18px;">$77K</strong><div style="font-size:11px;color:var(--lic-muted);">MRR</div></div>
+          <div><strong style="font-size:18px;">$900K+</strong><div style="font-size:11px;color:var(--lic-muted);">ARR</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:32px;background:#0A0A0B;color:#fff;border:none;">
+        <span class="eyebrow" style="color:#FFC400;">Phase 2 · $800K</span>
+        <div class="disp" style="font-size:32px;font-weight:700;margin-top:8px;letter-spacing:-0.02em;line-height:1.1;">H2 2027 — H1 2028</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-top:4px;">+15 months runway · Path to breakeven</div>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.12);margin:20px 0;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div><strong style="font-size:18px;">16,400</strong><div style="font-size:11px;opacity:0.6;">B2C paid subs</div></div>
+          <div><strong style="font-size:18px;">720</strong><div style="font-size:11px;opacity:0.6;">B2B production accounts</div></div>
+          <div><strong style="font-size:18px;">$190K</strong><div style="font-size:11px;opacity:0.6;">MRR</div></div>
+          <div><strong style="font-size:18px;">$2.2M+</strong><div style="font-size:11px;opacity:0.6;">ARR</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding:24px;border-radius:14px;background:var(--lic-paper-2);border:1px solid var(--lic-line);display:flex;gap:32px;align-items:center;">
+      <div>
+        <div class="eyebrow">2026 burn rate</div>
+        <div class="disp" style="font-size:32px;font-weight:700;margin-top:4px;letter-spacing:-0.02em;">$68K/mo</div>
+      </div>
+      <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+        <div><strong>73%</strong><div style="font-size:11px;color:var(--lic-muted);">Team & engineering</div></div>
+        <div><strong>11%</strong><div style="font-size:11px;color:var(--lic-muted);">G&A</div></div>
+        <div><strong>9%</strong><div style="font-size:11px;color:var(--lic-muted);">Marketing</div></div>
+        <div><strong>7%</strong><div style="font-size:11px;color:var(--lic-muted);">COGS</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final" id="start">
+  <div class="container">
+    <span class="eyebrow" style="color:rgba(255,255,255,0.7);">Pre-seed · 2026</span>
+    <h2 style="margin-top:18px;max-width:900px;margin-left:auto;margin-right:auto;">
+      Ready to cast?<br>
+      <span style="color:#FFC400;font-style:italic;">Let it cast.</span>
+    </h2>
+    <p style="font-size:17px;color:rgba(255,255,255,0.75);max-width:600px;margin:24px auto 0;line-height:1.55;">
+      See the product in 3 minutes — full interactive demo, mobile + desktop walkthrough.
+    </p>
+    <div class="ctas">
+      <a class="btn btn-yellow" href="index.html">Open the demo
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0A0A0B" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-secondary" href="mailto:laurent@letitcast.com" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.25);">Email the founders</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="cols">
+      <div>
+        <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;margin-bottom:14px;">
+          <svg width="14" height="22" viewBox="0 0 22 36">
+            <rect x="0" y="0" width="9" height="11" rx="1.5" fill="#FFC400"/>
+            <rect x="11" y="6" width="9" height="11" rx="1.5" fill="#E5283A"/>
+            <rect x="3" y="22" width="9" height="13" rx="1.5" fill="#1E5AF5"/>
+          </svg>
+          <span class="disp" style="font-weight:700;font-size:16px;letter-spacing:-0.025em;color:var(--lic-ink);">let it cast</span>
+        </a>
+        <p style="margin:0;line-height:1.55;">The performance layer of global casting.<br>Built in Los Angeles · 2026.</p>
+        <p class="mono" style="margin-top:14px;letter-spacing:0.04em;">laurent@letitcast.com</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="#">Self-tape</a>
+        <a href="#">Casting dashboard</a>
+        <a href="#">Talent search</a>
+        <a href="#">Performance profile</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="#team">Team</a>
+        <a href="#pricing">Pricing</a>
+        <a href="index.html">Investor demo</a>
+        <a href="#">Press</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Cookies</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--lic-line);margin:40px 0 20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+      <span>© 2026 Let it Cast · Strictly confidential · Pre-seed phase</span>
+      <span class="mono" style="letter-spacing:0.04em;">v0.1 · INVESTOR DEMO</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
