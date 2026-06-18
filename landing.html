@@ -907,6 +907,172 @@
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 16px; font-size: 26px;
   }
+
+  /* ════════════════════════════════════════════
+     RESPONSIVE — mobile first breakpoints
+     768px  → tablet / landscape phone
+     480px  → portrait phone
+  ════════════════════════════════════════════ */
+
+  @media (max-width: 768px) {
+
+    /* ── Base ── */
+    .container { padding: 0 20px; }
+    section { padding: 64px 0; }
+    section.tight { padding: 44px 0; }
+
+    /* ── Nav ── */
+    .nav-links { display: none; }
+    .nav-inner { height: 56px; }
+    .pearl-wrap { padding: 9px 16px; font-size: 13px; }
+
+    /* ── Geo hero ── */
+    .geo-content { padding: 80px 20px 0; }
+    .geo-title { font-size: clamp(38px, 10vw, 64px); margin: 20px 0 16px; }
+    .geo-sub { font-size: 15px; }
+    /* Reduce pill shapes on mobile */
+    .geo-shapes { display: none; }
+
+    /* ── VHS tablet frame ── */
+    .vhs { height: 90vh; }
+    .vhs-card { width: min(96vw, 500px); }
+
+    /* ── Classic hero ── */
+    .hero { padding: 48px 0 64px; }
+    .hero-grid {
+      grid-template-columns: 1fr !important;
+      gap: 36px;
+    }
+    .hero h1 { font-size: clamp(40px, 10vw, 64px); }
+    .hero-sub { font-size: 16px; margin-top: 20px; }
+    .hero-ctas { flex-wrap: wrap; }
+    .hero-meta { flex-wrap: wrap; gap: 16px; }
+    /* Move video below text, constrain size */
+    .vp-beam-wrap { order: -1; }
+
+    /* ── Stats ── */
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .stat { border-bottom: 1px solid var(--lic-line); }
+    .stat:nth-child(2n) { border-right: none; }
+    .stat:nth-last-child(-n+2) { border-bottom: none; }
+    .stat-v { font-size: 36px; }
+
+    /* ── Problem cards ── */
+    .problem-stats { grid-template-columns: 1fr; }
+    .ps-card-v { font-size: 52px; }
+
+    /* ── Product grid ── */
+    .product-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 32px; }
+
+    /* ── Dual cards ── */
+    .dual { grid-template-columns: 1fr; }
+    .dual-card { min-height: auto; }
+
+    /* ── Tabs ── */
+    .tabs-row { overflow-x: auto; width: 100%; flex-wrap: nowrap; }
+    .tab-btn { padding: 8px 14px; font-size: 12px; }
+
+    /* ── Poster gallery — 2 columns ── */
+    .pg-gallery { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ── Sticky scroll cards (dual mode) ── */
+    .ssc-card {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      border-radius: 20px;
+    }
+    .ssc-media { min-height: 220px; order: -1; }
+    .ssc-text { padding: 32px 24px; }
+    .ssc-h3 { font-size: 32px; }
+    .ssc-stack { padding: 24px 4% 0; }
+
+    /* ── Pricing ── */
+    .price-grid { grid-template-columns: 1fr; gap: 12px; }
+    .price-v { font-size: 36px; }
+
+    /* ── Team carousel ── */
+    .tc-outer { max-width: 100%; }
+    .tc-stage { flex-direction: column; align-items: stretch; gap: 0; }
+    .tc-photo-wrap {
+      width: 100%; height: 260px;
+      border-radius: 20px 20px 0 0;
+    }
+    .tc-card {
+      margin-left: 0;
+      border-radius: 0 0 20px 20px;
+      padding: 24px 20px 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    }
+    .tc-bio { font-size: 14px; }
+
+    /* ── Quote / cinema section ── */
+    .qs-inner {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      padding: 48px 0;
+    }
+    .qs-left { max-width: 260px; margin: 0 auto; }
+    .qs-quote { font-size: 18px; }
+
+    /* ── Scroll-expand video ── */
+    .se-title { font-size: clamp(36px, 9vw, 60px); margin-bottom: 24px; }
+
+    /* ── Final CTA ── */
+    .final { padding: 72px 0; }
+    .final h2 { font-size: clamp(40px, 10vw, 68px); }
+    .final .ctas { flex-wrap: wrap; justify-content: center; }
+
+    /* ── Moat section ── */
+    .moat { padding: 64px 0; }
+
+    /* ── Footer ── */
+    footer .cols { grid-template-columns: 1fr; gap: 32px; }
+    footer { padding: 40px 0 28px; }
+
+    /* ── Waitlist modal ── */
+    .wl-card { padding: 28px 20px; }
+    .wl-row { flex-direction: column; }
+    .wl-submit { width: 100%; }
+
+  }
+
+  @media (max-width: 480px) {
+
+    /* ── Geo hero ── */
+    .geo-title { font-size: clamp(32px, 11vw, 52px); }
+    .geo-sub { font-size: 14px; }
+
+    /* ── Classic hero ── */
+    .hero h1 { font-size: clamp(34px, 11vw, 48px); }
+    .hero-sub { font-size: 15px; }
+
+    /* ── Stats — single column ── */
+    .stat-grid { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 1px solid var(--lic-line); }
+    .stat:last-child { border-bottom: none; }
+
+    /* ── Poster gallery — 1 column ── */
+    .pg-gallery { grid-template-columns: 1fr; }
+
+    /* ── SSC heading ── */
+    .ssc-h3 { font-size: 26px; }
+
+    /* ── Pricing — still 1 col, nothing extra needed ── */
+
+    /* ── Team photo ── */
+    .tc-photo-wrap { height: 220px; }
+
+    /* ── Final CTA ── */
+    .final h2 { font-size: clamp(32px, 11vw, 48px); }
+
+    /* ── VHS laptop frame — very small ── */
+    .vhs { height: 70vh; }
+
+    /* ── Nav pearl button — shorter label ── */
+    .pearl-p { font-size: 12px; }
+    .pearl-wrap { padding: 8px 14px; }
+
+  }
 </style>
 </head>
 <body>
