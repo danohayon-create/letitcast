@@ -1207,10 +1207,10 @@
           The first video-native, AI-matching infrastructure for the $20B global casting market.
         </p>
         <div class="hero-ctas">
-          <a class="btn btn-primary" href="index.html">See the product demo
+          <button class="btn btn-primary" onclick="document.getElementById('contact-modal').style.display='flex'">See the product demo
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-          <a class="btn btn-secondary" href="#deck">Read investor deck</a>
+          </button>
+          <a class="btn btn-secondary" href="https://docsend.com/v/ffd3q/onepager" target="_blank" rel="noopener">Read investor deck</a>
         </div>
         <div class="hero-meta">
           
@@ -2254,6 +2254,16 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
   });
 }());
 </script>
+
+<!-- CONTACT MODAL -->
+<div id="contact-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(10,10,11,0.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:20px;padding:36px 32px;max-width:380px;width:90%;box-shadow:0 32px 80px rgba(0,0,0,0.18);position:relative;text-align:center;">
+    <button onclick="document.getElementById('contact-modal').style.display='none'" style="position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;color:#aaa;font-size:20px;line-height:1;">✕</button>
+    <div style="width:48px;height:48px;border-radius:50%;background:#FFC400;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;">✉</div>
+    <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;margin:0 0 8px;color:#0A0A0B;">Contact Let It Cast team</h3>
+    <a href="mailto:laurent@letitcast.com" style="font-size:16px;color:#1E5AF5;font-weight:600;text-decoration:none;">laurent@letitcast.com</a>
+  </div>
+</div>
 
 <!-- WAITLIST MODAL -->
 <div id="wl-modal">
